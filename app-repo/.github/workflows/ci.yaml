@@ -30,7 +30,7 @@ jobs:
 
       - name: Update deployment file
         run: |
-          sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops/deployment.yaml
+          sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops-repo/deployment.yaml
 
       - name: Commit and push GitOps change
         run: |
