@@ -1,9 +1,12 @@
-name: Build and Push Docker Image
+name: CI Build and Update GitOps
 
 on:
   push:
     branches:
       - main
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -19,18 +22,21 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} .
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} ./app-repo
 
-      - name: Push image
+      - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}
-      - name: Update deployment image tag
-        run: |
-          sed -i '' "s/REPLACE_TAG/${{ github.sha }}/" gitops/deployment.yaml
 
+      - name: Update deployment file
+        run: |
+          sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops/deployment.yaml
+
+      - name: Commit and push GitOps change
+        run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
           git add gitops/deployment.yaml
-          git commit -m "update image tag ${{ github.sha }}"
+          git commit -m "update image tag ${{ github.sha }}" || echo "no changes"
           git push
