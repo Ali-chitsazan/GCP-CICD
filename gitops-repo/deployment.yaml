@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple-api
+  template:
+    metadata:
+      labels:
+        app: simple-api
+    spec:
+      containers:
+        - name: simple-api
+          image: chitsaz/simple-api:REPLACE_TAG
+          ports:
+            - containerPort: 8080

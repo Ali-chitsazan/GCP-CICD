@@ -24,3 +24,13 @@ jobs:
 
       - name: Push image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}
+      - name: Update deployment image tag
+        run: |
+          sed -i '' "s/REPLACE_TAG/${{ github.sha }}/" gitops/deployment.yaml
+
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add gitops/deployment.yaml
+          git commit -m "update image tag ${{ github.sha }}"
+          git push
