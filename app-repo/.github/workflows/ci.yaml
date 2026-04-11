@@ -27,7 +27,16 @@ jobs:
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}
-
+      - name: Debug directory structure
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Contents:"
+          ls -la
+          echo "Looking for deployment.yaml everywhere:"
+          find . -name "*.yaml" -o -name "*.yml" | grep -i deployment
+          echo "Looking for gitops directories:"
+          find . -type d -name "*gitops*"
       - name: Update deployment file
         run: |
           sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops-repo/deployment.yaml
