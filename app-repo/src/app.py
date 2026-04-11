@@ -5,6 +5,15 @@ app = Flask(__name__)
 
 start_time = time.time()
 
+@app.route("/")
+def home():
+    return jsonify(
+        service="simple-api",
+        status="running",
+        endpoints=["/health", "/ready", "/metrics"]
+    )
+
+
 @app.route("/health")
 def health():
     return jsonify(status="ok")
