@@ -35,7 +35,7 @@ jobs:
           ls -la
           echo "Looking for deployment.yaml everywhere:"
           find . -name "*.yaml" -o -name "*.yml" | grep -i deployment
-          echo "Looking for gitops directories:"
+          echo "Looking for gitops-repo directories:"
           find . -type d -name "*gitops*"
       - name: Update deployment file
         run: |
