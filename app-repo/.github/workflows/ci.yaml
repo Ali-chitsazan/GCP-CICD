@@ -39,8 +39,8 @@ jobs:
           find . -type d -name "*gitops*"
       - name: Update deployment file
         run: |
-          sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops-repo/deployment.yaml
-
+          #sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops-repo/deployment.yaml
+          sed -i "s|simple-api:.*|simple-api:${{ github.sha }}|" gitops-repo/deployment.yaml
       - name: Commit and push GitOps change
         run: |
           git config user.name "github-actions"
