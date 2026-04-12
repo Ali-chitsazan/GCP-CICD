@@ -41,6 +41,9 @@ jobs:
         run: |
           #sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops-repo/deployment.yaml
           sed -i "s|simple-api:.*|simple-api:${{ github.sha }}|" gitops-repo/deployment.yaml
+          cat gitops-repo/deployment.yaml
+          git diff
+          
       - name: Commit and push GitOps change
         run: |
           git config user.name "github-actions"
@@ -48,6 +51,6 @@ jobs:
 
           git pull origin main --rebase
 
-          git add gitops-ops/deployment.yaml
+          git add gitops-repo/deployment.yaml
           git commit -m "update image tag ${{ github.sha }}" || echo "no changes"
           git push
