@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: simple-api
-          image: chitsaz/simple-api:427b75eefeb1da96b14390fda390238ef8e4bb16
+          image: chitsaz/simple-api:1bfae2d5e98079bf291033744d4f70021206d9e3
           ports:
             - containerPort: 8080
