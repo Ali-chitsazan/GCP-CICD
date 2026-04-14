@@ -51,7 +51,8 @@ jobs:
 
           git add gitops-repo/deployment.yaml
 
+          git commit -m "update image tag ${{ github.sha }}" || echo "no changes"
+          
           git pull origin main --rebase
           
-          git commit -m "update image tag ${{ github.sha }}" || echo "no changes"
           git push
