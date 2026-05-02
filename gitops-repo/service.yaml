@@ -4,7 +4,7 @@ metadata:
   name: simple-app-svc
 spec:
   selector:
-    app: simple-app
+    app: simple-api
   ports:
     - port: 80
       targetPort: 8080
