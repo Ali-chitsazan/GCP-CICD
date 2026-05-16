@@ -20,6 +20,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Print app.py from repository
+        run: |
+          echo "Current branch:"
+          git branch --show-current
+
+          echo "Current commit:"
+          git rev-parse HEAD
+
+          echo "Printing app-repo/app.py:"
+          nl -ba app-repo/app.py
+
+      - name: Validate Python syntax
+        run: |
+          python3 -m compileall app-repo
+
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
@@ -29,6 +44,14 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} ./app-repo
+
+      - name: Print app.py from built Docker image
+        run: |
+          echo "Printing /app/app.py from built Docker image:"
+          docker run --rm \
+            --entrypoint cat \
+            ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} \
+            /app/app.py
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
