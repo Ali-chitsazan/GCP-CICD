@@ -28,12 +28,12 @@ jobs:
           echo "Current commit:"
           git rev-parse HEAD
 
-          echo "Printing app-repo/app.py:"
-          nl -ba app-repo/app.py
+          echo "Printing app-repo/src/app.py:"
+          nl -ba app-repo/src/app.py
 
       - name: Validate Python syntax
         run: |
-          python3 -m compileall app-repo
+          python3 -m compileall app-repo/src
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -47,11 +47,19 @@ jobs:
 
       - name: Print app.py from built Docker image
         run: |
-          echo "Printing /app/app.py from built Docker image:"
+          echo "Checking app.py inside Docker image:"
+
+          echo "Trying /app/app.py:"
           docker run --rm \
-            --entrypoint cat \
+            --entrypoint sh \
             ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} \
-            /app/app.py
+            -c 'if [ -f /app/app.py ]; then nl -ba /app/app.py; else echo "/app/app.py not found"; fi'
+
+          echo "Trying /app/src/app.py:"
+          docker run --rm \
+            --entrypoint sh \
+            ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} \
+            -c 'if [ -f /app/src/app.py ]; then nl -ba /app/src/app.py; else echo "/app/src/app.py not found"; fi'
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
