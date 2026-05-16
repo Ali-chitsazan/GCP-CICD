@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ci-gitops-main
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,27 +29,44 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} ./app-repo
-          echo ${github.sha}
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}'
+          format: 'table'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'
 
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}
+
       - name: Debug directory structure
         run: |
           echo "Current directory:"
           pwd
+
           echo "Contents:"
           ls -la
+
           echo "Looking for deployment.yaml everywhere:"
-          find . -name "*.yaml" -o -name "*.yml" | grep -i deployment
+          find . -name "*.yaml" -o -name "*.yml" | grep -i deployment || true
+
           echo "Looking for gitops-repo directories:"
-          find . -type d -name "*gitops*"
+          find . -type d -name "*gitops*" || true
+
       - name: Update deployment file
         run: |
-          #sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops-repo/deployment.yaml
           sed -i "s|simple-api:.*|simple-api:${{ github.sha }}|" gitops-repo/deployment.yaml
+
+          echo "Updated deployment.yaml:"
           cat gitops-repo/deployment.yaml
+
+          echo "Git diff:"
           git diff
-          
+
       - name: Commit and push GitOps change
         run: |
           git config user.name "github-actions"
@@ -54,7 +75,7 @@ jobs:
           git add gitops-repo/deployment.yaml
 
           git commit -m "update image tag ${{ github.sha }}" || echo "no changes"
-          
+
           git pull origin main --rebase
-          
+
           git push
