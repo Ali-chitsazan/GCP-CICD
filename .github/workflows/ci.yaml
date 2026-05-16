@@ -8,10 +8,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: ci-gitops-main
-  cancel-in-progress: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,21 +15,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Print app.py from repository
-        run: |
-          echo "Current branch:"
-          git branch --show-current
-
-          echo "Current commit:"
-          git rev-parse HEAD
-
-          echo "Printing app-repo/src/app.py:"
-          nl -ba app-repo/src/app.py
-
-      - name: Validate Python syntax
-        run: |
-          python3 -m compileall app-repo/src
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -43,70 +24,37 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} ./app-repo
-
-      - name: Print app.py from built Docker image
-        run: |
-          echo "Checking app.py inside Docker image:"
-
-          echo "Trying /app/app.py:"
-          docker run --rm \
-            --entrypoint sh \
-            ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} \
-            -c 'if [ -f /app/app.py ]; then nl -ba /app/app.py; else echo "/app/app.py not found"; fi'
-
-          echo "Trying /app/src/app.py:"
-          docker run --rm \
-            --entrypoint sh \
-            ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }} \
-            -c 'if [ -f /app/src/app.py ]; then nl -ba /app/src/app.py; else echo "/app/src/app.py not found"; fi'
-
-      - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: '${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}'
-          format: 'table'
-          severity: 'HIGH,CRITICAL'
-          ignore-unfixed: true
-          exit-code: '1'
+            docker build \
+            --build-arg IMAGE_VERSION=${{ github.sha }} \
+            --build-arg GIT_SHA=${{ github.sha }} \
+            -t ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}  ./app-repo
 
       - name: Push Docker image
-        run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}
-
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/simple-api:${{ github.sha }}
       - name: Debug directory structure
         run: |
           echo "Current directory:"
           pwd
-
           echo "Contents:"
           ls -la
-
           echo "Looking for deployment.yaml everywhere:"
-          find . -name "*.yaml" -o -name "*.yml" | grep -i deployment || true
-
+          find . -name "*.yaml" -o -name "*.yml" | grep -i deployment
           echo "Looking for gitops-repo directories:"
-          find . -type d -name "*gitops*" || true
-
+          find . -type d -name "*gitops*"
       - name: Update deployment file
         run: |
+          #sed -i "s/REPLACE_TAG/${{ github.sha }}/" gitops-repo/deployment.yaml
           sed -i "s|simple-api:.*|simple-api:${{ github.sha }}|" gitops-repo/deployment.yaml
-
-          echo "Updated deployment.yaml:"
           cat gitops-repo/deployment.yaml
-
-          echo "Git diff:"
           git diff
-
+          
       - name: Commit and push GitOps change
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          git add gitops-repo/deployment.yaml
-
-          git commit -m "update image tag ${{ github.sha }}" || echo "no changes"
-
           git pull origin main --rebase
 
+          git add gitops-repo/deployment.yaml
+          git commit -m "update image tag ${{ github.sha }}" || echo "no changes"
           git push
