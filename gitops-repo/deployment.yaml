@@ -17,3 +17,39 @@ spec:
           image: chitsaz/simple-api:f7a563bc7e8ae37f9dc9a3f8cc3ba0d5125f69d0
           ports:
             - containerPort: 5000
+
+          env:
+            - name: ENVIRONMENT
+              value: "dev"
+
+            - name: APP_NAME
+              value: "GCP CI/CD Demo App"
+
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
