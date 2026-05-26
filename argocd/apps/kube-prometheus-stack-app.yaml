@@ -19,7 +19,13 @@ spec:
           enabled: true
           service:
             type: ClusterIP
-
+          persistence:
+            enabled: true
+            type: pvc
+            storageClassName: standard-rwo
+            accessModes:
+              - ReadWriteOnce
+            size: 5Gi
         prometheus:
           serviceMonitorSelectorNilUsesHelmValues: false
           podMonitorSelectorNilUsesHelmValues: false
