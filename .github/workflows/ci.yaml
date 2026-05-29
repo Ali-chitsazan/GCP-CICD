@@ -6,7 +6,7 @@ on:
       - main
     paths-ignore:
       - "gitops-repo/**"
-
+      - "README.md"
 permissions:
   contents: write
 
