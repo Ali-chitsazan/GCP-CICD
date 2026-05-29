@@ -35,7 +35,7 @@ The implementation covers:
 
 ## Architecture
 
-![GCP CI/CD and GitOps Architecture](https://github.com/Ali-chitsazan/GCP-CICD/blob/main/gitops-repo/diagram.drawio.png)
+![GCP CI/CD and GitOps Architecture](https://github.com/Ali-chitsazan/GCP-CICD/blob/main/gitops-repo/xdiagram.drawio.png)
 
 ### Validated Flow
 
@@ -66,7 +66,7 @@ The implementation covers:
 
 The running application provides a browser-based release verification page.
 
-![GCP CI/CD Demo App Dashboard](docs/images/app-dashboard-screenshot.png)
+![GCP CI/CD Demo App Dashboard]([docs/images/app-dashboard-screenshot.png](https://github.com/Ali-chitsazan/GCP-CICD/blob/main/gitops-repo/xapp.png))
 
 The dashboard shows:
 
