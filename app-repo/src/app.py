@@ -242,7 +242,7 @@ def home():
             </div>
 
             <div class="footer">
-                Built for a real DevOps portfolio project: CI/CD, GitOps, GKE, observability, and runtime visibility.
+                Built for a real DevOps portfolio project: CI/CD, GitOps, GKE, observability, and runtime visibility.  - Ali Chitsazan
             </div>
         </div>
     </body>
